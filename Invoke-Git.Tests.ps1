@@ -4,7 +4,6 @@ $sut = ( (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '
 $scriptBody = "using module $here\$sut"
 $script = [ScriptBlock]::Create($scriptBody)
 . $script
-Import-Module $here\EncodingHelper.psm1
 
 #region Describe "Invoke-Git"
 Describe "Invoke-Git" {
