@@ -1,0 +1,1 @@
+Wrapper for common git commands with sort-of friendly aliases and powershell auto-completion.
