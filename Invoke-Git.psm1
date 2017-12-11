@@ -16,85 +16,65 @@ gitgit -RemoteCommand push-to-remote -Remote <RemoteName>
 PARAM(
 
     [CmdletBinding(
-            DefaultParameterSetName='Default')]
+            DefaultParameterSetName='Default'
+            )]
 
     [Parameter(
         HelpMessage="Pick something from the list.",
-        ParameterSetName='Default')] 
+        ParameterSetName='Default',
+        Position = 0)] 
     [ValidateSet(
-     'status'  <#Listing of Uncommitted files#>
-    ,'status-short'  <#Status in short form#>
-    ,'status-AsObject' <#Converting strings into actual, useful things#>
-    ,'stage-gridview'  <#Simple interactive add to staging#>
-    ,'stage-modified'
-    ,'unstage-gridview' <#Simple interactive reset HEAD#>
-    ,'commit'      <#Prompts for message and then commits staging area#>
-    ,'amend'       <#Overwrite the prior commit#>
-    ,'diff-WdToStaged'
-    ,'diff-StagedToCommitted'
-    ,'log-lastFive'   <#View last five commit details.#>
-    ,'log-graph'   <# git log --oneline --decorate --graph --all #>
-    ,'view-config'
+     'status'  <#status = Listing of Uncommitted files#>
+    ,'status-short'  <#status-short = Status in short form#>
+    ,'status-AsObject' <#status-AsObject = Converting strings into actual, useful things#>
+    ,'stage-gridview'  <#stage-gridview = Simple interactive add to staging#>
+    ,'stage-modified'  <#stage-modified = All previously committed and now modified files are added to staging.#>
+    ,'unstage-gridview' <#unstage-gridview = Simple interactive reset HEAD#>
+    ,'commit'      <#commit = Prompts for message and then commits staging area#>
+    ,'amend'       <#amend = Overwrite the prior commit#>
+    ,'diff-WdToStaged' <#diff-WdToStaged = differential of working directory to the staged files#>
+    ,'diff-StagedToCommitted' <#diff-StagedToCommitted = differential of staged files to committed files.#>
+    ,'log-lastFive'   <#log-lastFive = View last five commit details.#>
+    ,'log-graph'   <#log-graph = git log --oneline --decorate --graph --all #>
+    ,'view-config' <#view-config = List configuration values#>
     ,'revertWdToCommitted-gridview' <#Checks out the most recent commit to overwrite the target file.#>
     
-    ,'tags-lastAsObject'                <#Last As Object#>
-    ,'tag-TertiaryVersionPlusPlus'      <#For marking versions. #>
-    ,'tag-MinorVersionPlusPlus'         <#For marking versions. #>
-    ,'tag-MajorVersionPlusPlus'         <#For marking versions. #>
-    ,'tag-ZZZVersion0dot0dot1'          <#For marking versions. #>
-    ,'zzz-init'    <#Set up a repository at the current directory. Sorted to the end of the validate list.#>
+    ,'tags-lastAsObject'                <#tags-lastAsObject = Get the last tag As Object (for use in the following commands).#>
+    ,'tag-TertiaryVersionPlusPlus'      <#tag-TertiaryVersionPlusPlus = For tagging versions - x.x.1 to x.x.2 . #>
+    ,'tag-MinorVersionPlusPlus'         <#tag-MinorVersionPlusPlus =  For tagging versions - x.1.x to x.2.0 . #>
+    ,'tag-MajorVersionPlusPlus'         <#tag-MajorVersionPlusPlus =  For tagging versions - 1.x.x to 2.0.0 . #>
+    ,'tag-ZZZVersion0dot0dot1'          <#tag-ZZZVersion0dot0dot1 =   Initial tag - 0.0.1 . #>
+    ,'list-remote' <#list-remote = list the remotes.#>
+    ,'get-branch'  <#get-branch = list the branches.#>
+
+    ,'push-to-remote' <#push-to-remote = Push commits to a remote. Requires Remote parameter.#>
+    ,'fetch-from-remote' <#fetch-from-remote = Fetches from a remote. Requires Remote parameter.#>
+
+    ,'add-remote' <#add-remote = adds a new remote. Requires Remote and RemoteUrl parameters.#>
+
+    ,'new-branch'      <#new-branch = Creates a new branch. Requires the Branch parameter.     #>
+    ,'set-branch'      <#set-branch = Switches to an existing branch. Requires the branch parameter.     #>
+    ,'merge-fromBranch'<#merge-fromBranch = Merges commits in from an existing branch. Requires the Branch Parameter.#>
+
     )]$GitCommand
 
-    ,[Parameter(
-        <#HelpMessage="",#>
-        ParameterSetName='Remotes')] 
-    [ValidateSet(
-     'push-to-remote'
-    ,'fetch-from-remote'
-    ,'list-remote'
-    )]$RemoteCommand
-    ,[Parameter(
-        <#HelpMessage="",#>
-        ParameterSetName='AddRemote')]    
-    [ValidateSet(
-     'add-remote'
-    )]$RemoteCommand_Add
-    ,[Parameter(
-        <#HelpMessage="",#>
-        Mandatory=$true,
-        ParameterSetName='Remotes')] 
-    [Parameter(
-        HelpMessage="For list-remote, type anything, it gets ignored.",
-        Mandatory=$true,
-        ParameterSetName='AddRemote')]
-     [String]$Remote
-    ,[Parameter(
-        Mandatory=$true,
-        HelpMessage="This only matters for adding new remotes.",
-        ParameterSetName='AddRemote')] 
-    [String]$RemoteUrl
+)
 
-
-    ,[Parameter(
-        <#HelpMessage="",#>
-        ParameterSetName='Branches')] 
-    [ValidateSet(
-    <#various branching and merging and undoing commands are needed.#>
-     'new-branch'
-    ,'set-branch'
-    ,'get-branch' 
-    ,'merge-fromBranch'
-    )]$BranchCommand
-    ,[Parameter(
-        <#HelpMessage="",#>
-        ParameterSetName='Branches')] 
-    [String]$Branch
+DynamicParam {
     
+    $array = @()
+    IF ($GitCommand -in ('push-to-remote','fetch-from-remote') ) {$array += New-DynamicParameter -Name 'Remote' -Type String -Mandatory -ValidateSet @(git remote) }
+    IF ($GitCommand -in ('add-remote') ) {$array += New-DynamicParameter -Name 'Remote' -Type String -Mandatory ; $array += New-DynamicParameter -Name 'RemoteURL' -Type String -Mandatory}
+    IF ($GitCommand -in ('new-branch') ) {$array += New-DynamicParameter -Name 'Branch' -Type String -Mandatory}
+    IF ($GitCommand -in ('set-branch','merge-fromBranch') ) {$array += New-DynamicParameter -Name 'Branch' -Type String -Mandatory -ValidateSet ( @(git branch -a).Replace('*','').TrimStart() ) }
+    
+    $array | New-DynamicParameterDictionary 
 
-    )
+}<#End Dynamic Parameters#>
 
-IF($PSCmdlet.ParameterSetName -like "Default")
-{
+BEGIN {}
+PROCESS {
+
     SWITCH ($GitCommand)
     {
         'status'  <#Listing of Uncommitted files#>                              {git status}
@@ -116,44 +96,23 @@ IF($PSCmdlet.ParameterSetName -like "Default")
         'tag-MinorVersionPlusPlus'         <#For marking versions. #>                                             {$a = Invoke-Git -GitCommand tags-lastAsObject ; git tag -a "v$($a.MajorVersion).$($a.MinorVersion + 1).0" }
         'tag-MajorVersionPlusPlus'         <#For marking versions. #>                                             {$a = Invoke-Git -GitCommand tags-lastAsObject ; git tag -a "v$($a.MajorVersion + 1).0.0" }
         'tag-ZZZVersion0dot0dot1'          <#For marking versions. #>                                             {git tag -a "v0.0.1" }
-        'zzz-init'    <#Set up a repository at the current directory. Sorted to the end of the validate list.#>   {git init}
-        
-    }<#End Switch#>
-}<#End IF($PSCmdlet.ParameterSetName -like "Default")#>
-
-IF($PSCmdlet.ParameterSetName -like "Remotes")
-{
-    SWITCH ($RemoteCommand)
-    {
-        'push-to-remote'    {git push $Remote}
-        'fetch-from-remote' {git fetch $Remote}
         'list-remote'       {git remote --verbose}
-    }<#End Switch#>
-
-}<#End IF($PSCmdlet.ParameterSetName -like "Remotes")#>
-
-IF($PSCmdlet.ParameterSetName -like "AddRemote")
-{
-    SWITCH ($RemoteCommand_Add)
-    {
-        'add-remote'        {git remote add $Remote $RemoteURL}
-    }<#End Switch#>
-
-}<#End IF($PSCmdlet.ParameterSetName -like "AddRemote")#>
-
-
-IF($PSCmdlet.ParameterSetName -like "Branches")
-{
-    SWITCH ($BranchCommand)
-    {
-        'new-branch'          {git branch $Branch}
-        'set-branch'          {git checkout $Branch}
         'get-branch'          {git branch}
-        'merge-fromBranch'    {git merge $Branch}
+
+        'push-to-remote'    {git push $PSBoundParameters['Remote']}
+        'fetch-from-remote' {git fetch $PSBoundParameters['Remote']}
+        
+        'add-remote'        {write-verbose $PSBoundParameters['Remote'];write-verbose $PSBoundParameters['RemoteURL']; git remote add $PSBoundParameters['Remote'] $PSBoundParameters['RemoteURL']}
+
+        'new-branch'          {git branch $PSBoundParameters['Branch']}
+        'set-branch'          {git checkout $PSBoundParameters['Branch']}
+        'merge-fromBranch'    {git merge $PSBoundParameters['Branch']}
     }<#End Switch#>
 
-}<#End IF($PSCmdlet.ParameterSetName -like "Branches")#>
 
+}<#End Process#>
+
+END{}<#End End#>
 
 }<#END Invoke-Git#>
 

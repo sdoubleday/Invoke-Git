@@ -1,3 +1,6 @@
 [submodule "EncodingHelper"]
 	path = EncodingHelper
 	url = https://github.com/sdoubleday/EncodingHelper.git
+[submodule "New-DynamicParameter"]
+	path = New-DynamicParameter
+	url = https://github.com/sdoubleday/New-DynamicParameter.git
